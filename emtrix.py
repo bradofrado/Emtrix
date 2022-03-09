@@ -41,7 +41,6 @@ class Variable(Value):
         pass
     def __str__(self) -> str:
         return self.name + " = " + super().__str__()
-
 class Emtrix():
     def __init__(self):
         self.variables = []
@@ -53,7 +52,13 @@ class Emtrix():
             _str += '\n'
         return _str
     def addVariable(self, value):
-        self.variables.append(value)
+        var = self.__find__(value.name)
+
+        if (var == None):
+            self.variables.append(value)
+        else:
+            index = self.variables.index(var)
+            self.variables[index] = value
     def getVariable(self, name):
         var = self.__find__(name)
         if (var == None):
