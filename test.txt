@@ -1,0 +1,35 @@
+A =  [a b c d e.
+      3 4 5 6  | 5.
+      4 6 7 7  | 6. ];
+
+Bob = [ 1 2 3 39.
+      3 4 5 6.
+      4 6 7 7. ];
+B = 10;
+
+//This is a comment
+
+c = b/A;
+det(A);
+
+b = 3;
+
+det(b);
+det(A);
+det(adfklj);
+
+asdflkj = asdlkididikd;
+
+
+//Grammar
+// Emtrix -> Declaration DeclarationList Expression
+// Declaration -> id = VALUE ;
+// DeclarationList -> Declaration DeclarationList | lambda
+// Expression -> FUNC openParen ID closeParen ;
+// FUNC -> det
+// VALUE -> openBracket ROW ROWLIST closeBracket | SEQUENCE OPERATION
+// ROW -> SEQUENCE SEQUENCELIST .
+// ROWLIST -> ROW ROWLIST | lambda
+// OPERATION -> * SEQUENCE | - SEQUENCE | + SEQUENCE | / SEQUENCE | lambda 
+// SEQUENCE -> id | num
+// SEQUENCELIST -> SEQUENCE SEQUENCELIST | SEQUENCE '|' SEQUENCELIST | lambda
