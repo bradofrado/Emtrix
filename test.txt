@@ -1,12 +1,12 @@
-A =  [a b c d e.
+A =  [1 2 3 4 5.
       3 4 5 6  | 5.
       4 6 7 7  | 6. ];
 
 Bob = [ 1 2 3 39.
       3 4 5 6.
       4 6 7 7. ];
-B = 10;
-
+b = 10;
+A = 10;
 //This is a comment
 
 c = b/A;
@@ -16,9 +16,6 @@ b = 3;
 
 det(b);
 det(A);
-det(adfklj);
-
-asdflkj = asdlkididikd;
 
 
 //Grammar

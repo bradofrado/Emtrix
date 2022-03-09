@@ -1,5 +1,5 @@
-from tokens import TokenType
-from emtrix import ObjectType, Variable, Emtrix
+from tokens import TokenType, Token
+from emtrix import ObjectType, Value, Number, Variable, Emtrix
 
 class Parser():
     def __init__(self, tokens):
@@ -9,6 +9,7 @@ class Parser():
         self.curr = tokens[0]
         self.errorToken = None
  
+        self.emtrix = Emtrix()
         return None
 
     def parse(self):
@@ -20,15 +21,23 @@ class Parser():
             return False
 
     def moveNext(self):
+        val = None
         if self.curr.token != TokenType.EOF:
+                val = self.curr
                 self.tokens = self.tokens[1:]
                 self.curr = self.tokens[0]
         if self.curr.token == TokenType.COMMENT:
-            self.moveNext()
+            return self.moveNext()
 
-    def match(self, token):
+        return val
+
+    def match(self, token : TokenType, idIsDefined : bool = False) -> Token:
         if self.curr.token == token:
-            self.moveNext()
+            #If this is a variable that should be defined already but isn't,
+            #throw an excpetion
+            if (idIsDefined and token == TokenType.ID and self.emtrix.containsVariable(self.curr.value) == False):
+                self.throwException()
+            return self.moveNext()
         else:
             self.throwException() 
         return None
@@ -47,10 +56,11 @@ class Parser():
             self.throwException()
         return None
     def Declaration(self):
-        self.match(TokenType.ID)
+        idToken = self.match(TokenType.ID)
         self.match(TokenType.EQUALS)
-        self.VALUE()
+        value = self.VALUE(idToken)
         self.match(TokenType.SEMICOLON)
+        self.emtrix.addVariable(value)
         return None
     def DeclarationList(self):
         if self.curr.token == TokenType.ID:
@@ -84,18 +94,29 @@ class Parser():
         else:
             self.throwException()
         return None
-    def VALUE(self):
+    def VALUE(self, idToken):
         if self.curr.token == TokenType.OPEN_BRACKET:
             self.match(TokenType.OPEN_BRACKET)
-            self.ROW()
-            self.ROWLIST()
+            row = self.ROW()
+            rows = self.ROWLIST()
             self.match(TokenType.CLOSE_BRACKET)
+
+            variable = Variable(idToken.value, ObjectType.Matrix)
+            variable.addValue(row)
+            for _row in rows:
+                variable.addValue(_row)
+
+            return variable
         elif self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
-            self.SEQUENCE()
+            var = self.SEQUENCE()
             self.OPERATION()
+
+            variable = Variable(idToken.value, ObjectType.Int)
+            variable.addValue(var)
+
+            return variable
         else:
             self.throwException()
-        return None
     def OPERATION(self):
         if self.curr.token == TokenType.STAR:
             self.match(TokenType.STAR)
@@ -115,37 +136,52 @@ class Parser():
         return None
     def ROW(self):
         if self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
-            self.SEQUENCE()
-            self.SEQUENCELIST()
+            val = self.SEQUENCE()
+            vals = self.SEQUENCELIST()
             self.match(TokenType.PERIOD)
+
+            vals.insert(0, val)
+
+            return vals
         else:
             self.throwException()
         return None
     def ROWLIST(self):
         if self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
-            self.ROW()
-            self.ROWLIST()
+            row = self.ROW()
+            rows = self.ROWLIST()
+
+            rows.insert(0, row)
+
+            return rows
         else:
             #lambda
-            pass
+            return []
         return None
-    def SEQUENCE(self):
+    def SEQUENCE(self) -> Value:
         if self.curr.token == TokenType.ID:
-            self.match(TokenType.ID)
+            idToken = self.match(TokenType.ID, True)
+
+            return self.emtrix.getVariable(idToken.value)
         elif self.curr.token == TokenType.NUM:
-            self.match(TokenType.NUM)
+            numToken = self.match(TokenType.NUM)
+
+            return Number(numToken.value)
         else:
             self.throwException()
         return None
     def SEQUENCELIST(self):
         if self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
-            self.SEQUENCE()
+            var = self.SEQUENCE()
             if self.curr.token == TokenType.PIPE:
                 self.match(TokenType.PIPE)
-            self.SEQUENCELIST()
+            vars = self.SEQUENCELIST()
+            vars.insert(0, var)
+
+            return vars
         else:
             #lambda
-            pass
+            return []
         return None
 #Grammar
 # Emtrix -> Declaration DeclarationList ExpressionList

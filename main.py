@@ -19,6 +19,7 @@ parser = Parser(scanner.tokens)
 
 if parser.parse():
     print("Success!")
+    print(parser.emtrix)
 else:
     print("Failure")
     print(parser.errorToken)
