@@ -1,11 +1,5 @@
-A = 4 + 3 * 8 / 3 + [1 2 3.];
+A = 4 + (3 * ((8 / (3) + ([1 2 3.]))));
 
-E + A 
-A / B + A 
-A * B / B + a
-(E) * B / B + a
-(4 + 3) * B / B + a
-(4 + 3) * 
 c = 10+4;
 
 A =  10 * [1 2 3 4 5.
@@ -18,12 +12,7 @@ Bob = [ 1 2 3 39.
 b = 10;
 A = 10;
 //This is a comment
-det(A);
 
-b = 3;
-
-det(b);
-det(A);
 
 //Grammar
 // Emtrix -> Declaration DeclarationList Expression

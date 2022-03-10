@@ -57,19 +57,19 @@ class Parser():
     def parseOperations(self, tokens, tokenTypes):
         index = 0
         hitIndex = -1
-        #parenDepth = 0
+        parenDepth = 0
         #can loop through these, until it hits something not in this list
         #this is essentially anything that can be in a computation (including matrix tokens)
         toCheck = [TokenType.ID, TokenType.NUM, TokenType.STAR, TokenType.DIVIDE, TokenType.PLUS, TokenType.MINUS, TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET, TokenType.PERIOD, TokenType.PIPE, TokenType.OPEN_PAREN, TokenType.CLOSE_PAREN]
         while index < len(tokens) - 1 and self.switch(toCheck, tokens[index].token):
             # Keep track of how many levels of parenthesis we are in
-            # if tokens[index].token == TokenType.OPEN_PAREN:
-            #     parenDepth = parenDepth + 1
-            # elif tokens[index].token == TokenType.CLOSE_PAREN:
-            #     parenDepth = parenDepth - 1
+            if tokens[index].token == TokenType.OPEN_PAREN:
+                parenDepth = parenDepth + 1
+            elif tokens[index].token == TokenType.CLOSE_PAREN:
+                parenDepth = parenDepth - 1
 
             # If we are one of the given token type and not in parens, save that index
-            if self.switch(tokenTypes, tokens[index].token):# and parenDepth == 0:
+            if self.switch(tokenTypes, tokens[index].token) and parenDepth == 0:
                 hitIndex = index
             index = index + 1
 
@@ -131,11 +131,11 @@ class Parser():
         elif tokens[index].token == TokenType.MINUS:
             self.COMPUTATION(tokens[0:index])
             self.match(TokenType.MINUS)
-            self.A(self.tokens)
+            self.A(tokens[index+1:])
         elif tokens[index].token == TokenType.PLUS:
             self.COMPUTATION(tokens[0:index])
             self.match(TokenType.PLUS)
-            self.A(self.tokens)
+            self.A(tokens[index+1:])
         # elif index == -1#tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM or tokens[0].token == TokenType.OPEN_BRACKET:
         #     self.A(tokens[0:index+1])
         else:
@@ -165,28 +165,28 @@ class Parser():
     def A(self, tokens):
         index = self.parseOperations(tokens, [TokenType.STAR, TokenType.DIVIDE])
         if index == -1:
-            self.B()
+            self.B(tokens)
         elif tokens[index].token == TokenType.STAR:
             self.A(tokens[0:index])
             self.match(TokenType.STAR)
-            self.B()
+            self.B(tokens[index+1:])
         elif tokens[index].token == TokenType.DIVIDE:
             self.A(tokens[0:index])
             self.match(TokenType.DIVIDE)
-            self.B()
+            self.B(tokens[index+1:])
         # elif tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM or tokens[0].token == TokenType.OPEN_BRACKET:
         #     self.B()
         else:
             self.throwException()
         pass
-    def B(self):
-        if self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
+    def B(self, tokens):
+        if tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM:
             self.SEQUENCE()
-        elif self.curr.token == TokenType.OPEN_BRACKET:
+        elif tokens[0].token == TokenType.OPEN_BRACKET:
             self.MATRIX()
-        elif self.curr.token == TokenType.OPEN_PAREN:
+        elif tokens[0].token == TokenType.OPEN_PAREN:
             self.match(TokenType.OPEN_PAREN)
-            self.COMPUTATION(self.tokens)
+            self.COMPUTATION(tokens[1:])
             self.match(TokenType.CLOSE_PAREN)
         else:
             self.throwException()
