@@ -24,6 +24,9 @@ class Number(Value):
     #     return super().__str__()
     def getValue(self):
         return 0
+class Computation(Value):
+    def __init__(self):
+        super().__init__()
     
 class Variable(Value):
     def __init__(self, name, type):
