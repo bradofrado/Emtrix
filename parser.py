@@ -33,8 +33,8 @@ class Parser():
                 val = self.curr
                 self.tokens = self.tokens[1:]
                 self.curr = self.tokens[0]
-        if self.curr.token == TokenType.COMMENT:
-            return self.moveNext()
+        while self.curr.token == TokenType.COMMENT:
+            self.moveNext()
 
         return val
 

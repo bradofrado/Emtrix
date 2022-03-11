@@ -26,7 +26,7 @@ class TokenType(Enum):
     COMMENT = '^\/\/.*'
     #STRINGBEGIN = '^\>[^{\n]*'
     #STRINGEND = '^}[^\n{]*'
-    STRING = '^\>[^\n]*'
+    STRING = '^\>.*?(?=\/\/|\n)'
     PARAMALL = '{[^{}]*}'
     PARAM = '[^{}]+'
     WHITESPACE = '^ +'
