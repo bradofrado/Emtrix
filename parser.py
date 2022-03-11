@@ -1,15 +1,20 @@
+from scanner import Scanner
 from tokens import TokenType, Token
+import re
 from emtrix import Computation, Function, Matrix, ObjectType, OperatorType, Print, Value, Number, Variable, Emtrix
 
 class Parser():
-    def __init__(self, tokens):
+    def __init__(self, tokens, emtrix = None):
         if (len(tokens) == 0):
             raise Exception("No tokens were given")
         self.tokens = tokens
         self.curr = tokens[0]
         self.errorToken = None
  
-        self.emtrix = Emtrix()
+        if emtrix == None:
+            self.emtrix = Emtrix()
+        else:
+            self.emtrix = emtrix
         return None
 
     def parse(self):
@@ -83,13 +88,9 @@ class Parser():
 
     #Grammars
     def Emtrix(self):
-        if self.curr.token == TokenType.ID:
-            self.Declaration()
-            self.DeclarationList()
-            self.PrintList()
-            self.match(TokenType.EOF)
-        else:
-            self.throwException()
+        self.DeclarationList()
+        self.PrintList()
+        self.match(TokenType.EOF)
         return None
     def Declaration(self):
         idToken = self.match(TokenType.ID)
@@ -120,7 +121,7 @@ class Parser():
             self.throwException()
         return None
     def PrintList(self):
-        if (self.curr.token == TokenType.ARROW):
+        if (self.curr.token == TokenType.STRING):
             self.Print()
             self.DeclarationList()
             self.PrintList()
@@ -128,11 +129,20 @@ class Parser():
             #lambda
             pass
     def Print(self):
-        if self.curr.token == TokenType.ARROW:
-            self.match(TokenType.ARROW)
-            val = self.COMPUTATION(self.tokens)
+        if self.curr.token == TokenType.STRING:
+            _str = self.match(TokenType.STRING)
+            params = re.findall(TokenType.PARAMALL.value, _str.value)
+            vals = []
+            for x in params:
+                x = re.search(TokenType.PARAM.value, x).group()
+                s = Scanner(x)
+                s.scanAll()
 
-            self.emtrix.addPrint(Print(val))
+                p = Parser(s.tokens, self.emtrix)
+
+                vals.append(p.COMPUTATION(p.tokens))
+                
+            self.emtrix.addPrint(Print(_str.value, vals))
     def FUNC(self):
         if (self.curr.token == TokenType.DET):
             self.match(TokenType.DET)
@@ -271,11 +281,11 @@ class Parser():
             return []
         return None
 #Grammar
-# Emtrix -> Declaration DeclarationList PrintList
+# Emtrix -> DeclarationList PrintList
 # Declaration -> id = COMPUTATION ;
 # DeclarationList -> Declaration DeclarationList | lambda
-# PrintList -> COMPUTATION DeclarationList PrintList  | lambda
-# Print -> > COMPUTATION
+# PrintList -> Print DeclarationList PrintList  | lambda
+# Print -> string
 # Expression -> FUNC openParen COMPUTATION closeParen;
 # FUNC -> det
 # ROW -> SEQUENCE SEQUENCELIST .

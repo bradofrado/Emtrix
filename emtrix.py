@@ -1,4 +1,7 @@
 from enum import Enum
+import re
+
+from tokens import TokenType
 #import numpy as np
 
 class ObjectType(Enum):
@@ -74,10 +77,18 @@ class Variable(Value):
         return self.name + " = " + super().__str__()
 
 class Print():
-    def __init__(self, value : Value):
-        self.value = value
+    def __init__(self, _str : str, vals):
+        self.string = _str
+        self.vals = vals
     def print(self):
-        print(str(self.value.getValue()))
+        params = re.findall(TokenType.PARAMALL.value, self.string)
+
+        for i in range(len(params)):
+            val = self.vals[i]
+            self.string = self.string.replace(params[i], str(val.getValue()))
+        print(self.string)
+
+        #print(str(self.value.getValue()))
 
 
 class Emtrix():

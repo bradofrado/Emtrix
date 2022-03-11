@@ -14,6 +14,8 @@ class Scanner:
             pass
 
         for tokenType in TokenType:
+            if tokenType.value[0] != '^':
+                continue
             token = self.scan(tokenType)
 
             if (token != None):

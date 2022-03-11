@@ -20,11 +20,15 @@ class TokenType(Enum):
     MINUS = '^-'
     PLUS = '^\+'
     DIVIDE = '^\/(?!\/\*)(?!\/)'
-    ARROW = '^\>'
 
     #Misc
-    COMMENT = '(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)'
-    #COMMENT = '^\/\/.*'
+    #COMMENT = '(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)'
+    COMMENT = '^\/\/.*'
+    #STRINGBEGIN = '^\>[^{\n]*'
+    #STRINGEND = '^}[^\n{]*'
+    STRING = '^\>[^\n]*'
+    PARAMALL = '{[^{}]*}'
+    PARAM = '[^{}]+'
     WHITESPACE = '^ +'
     NEWLINE = '^\n'
     UNDEFINED = '^[^a-zA-Z0-9\s\[\]\.\(\)\|\=;\*]+'

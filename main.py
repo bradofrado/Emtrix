@@ -23,8 +23,6 @@ scanner.scanAll()
 parser = Parser(scanner.tokens)
 
 if parser.parse():
-    print("Success!")
-    parser.emtrix.printVariables()
     parser.emtrix.printAll()
 else:
     print("Failure")
