@@ -1,5 +1,5 @@
 from tokens import TokenType, Token
-from emtrix import Computation, ObjectType, Value, Number, Variable, Emtrix
+from emtrix import Computation, Matrix, ObjectType, OperatorType, Value, Number, Variable, Emtrix
 
 class Parser():
     def __init__(self, tokens):
@@ -14,6 +14,8 @@ class Parser():
 
     def parse(self):
         try:
+            while self.curr.token == TokenType.COMMENT:
+                self.moveNext()
             self.Emtrix()
             return True
         except Exception as token:
@@ -90,7 +92,9 @@ class Parser():
         self.match(TokenType.EQUALS)
         value = self.COMPUTATION(self.tokens)
         self.match(TokenType.SEMICOLON)
-        #self.emtrix.addVariable(value)
+
+        newVar = Variable(idToken.value, value)
+        self.emtrix.addVariable(newVar)
         return None
     def DeclarationList(self):
         if self.curr.token == TokenType.ID:
@@ -124,74 +128,58 @@ class Parser():
         else:
             self.throwException()
         return None
-    def COMPUTATION(self, tokens):
+    def COMPUTATION(self, tokens) -> Value:
         index = self.parseOperations(tokens, [TokenType.PLUS, TokenType.MINUS])
         if index == -1:
-            self.A(tokens[0:])
+            return self.A(tokens[0:])
         elif tokens[index].token == TokenType.MINUS:
-            self.COMPUTATION(tokens[0:index])
+            leftValue = self.COMPUTATION(tokens[0:index])
             self.match(TokenType.MINUS)
-            self.A(tokens[index+1:])
+            rightValue = self.A(tokens[index+1:])
+
+            return Computation(leftValue, rightValue, OperatorType.Minus)
         elif tokens[index].token == TokenType.PLUS:
-            self.COMPUTATION(tokens[0:index])
+            leftValue = self.COMPUTATION(tokens[0:index])
             self.match(TokenType.PLUS)
-            self.A(tokens[index+1:])
-        # elif index == -1#tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM or tokens[0].token == TokenType.OPEN_BRACKET:
-        #     self.A(tokens[0:index+1])
+            rightValue = self.A(tokens[index+1:])
+
+            return Computation(leftValue, rightValue, OperatorType.Plus)
         else:
             self.throwException()
-        # if self.curr.token == TokenType.OPEN_BRACKET:
-        #     self.match(TokenType.OPEN_BRACKET)
-        #     row = self.ROW()
-        #     rows = self.ROWLIST()
-        #     self.match(TokenType.CLOSE_BRACKET)
-
-        #     variable = Variable(idToken.value, ObjectType.Matrix)
-        #     variable.addValue(row)
-        #     for _row in rows:
-        #         variable.addValue(_row)
-
-        #     return variable
-        # elif self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
-        #     var = self.SEQUENCE()
-        #     self.OPERATION()
-
-        #     variable = Variable(idToken.value, ObjectType.Int)
-        #     variable.addValue(var)
-
-        #     return variable
-        # else:
-        #     self.throwException()
-    def A(self, tokens):
+    def A(self, tokens) -> Value:
         index = self.parseOperations(tokens, [TokenType.STAR, TokenType.DIVIDE])
         if index == -1:
-            self.B(tokens)
+            return self.B(tokens)
         elif tokens[index].token == TokenType.STAR:
-            self.A(tokens[0:index])
+            leftValue = self.A(tokens[0:index])
             self.match(TokenType.STAR)
-            self.B(tokens[index+1:])
+            rightValue = self.B(tokens[index+1:])
+
+            return Computation(leftValue, rightValue, OperatorType.Multiply)
         elif tokens[index].token == TokenType.DIVIDE:
-            self.A(tokens[0:index])
+            leftValue = self.A(tokens[0:index])
             self.match(TokenType.DIVIDE)
-            self.B(tokens[index+1:])
-        # elif tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM or tokens[0].token == TokenType.OPEN_BRACKET:
-        #     self.B()
+            rightValue = self.B(tokens[index+1:])
+
+            return Computation(leftValue, rightValue, OperatorType.Divide)
         else:
             self.throwException()
         pass
-    def B(self, tokens):
+    def B(self, tokens) -> Value:
         if tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM:
-            self.SEQUENCE()
+            return self.SEQUENCE()
         elif tokens[0].token == TokenType.OPEN_BRACKET:
-            self.MATRIX()
+            return self.MATRIX()
         elif tokens[0].token == TokenType.OPEN_PAREN:
             self.match(TokenType.OPEN_PAREN)
-            self.COMPUTATION(tokens[1:])
+            value = self.COMPUTATION(tokens[1:])
             self.match(TokenType.CLOSE_PAREN)
+
+            return value
         else:
             self.throwException()
         pass
-    def MATRIX(self):
+    def MATRIX(self) -> Value:
         if self.curr.token == TokenType.OPEN_BRACKET:
             self.match(TokenType.OPEN_BRACKET)
             row = self.ROW()
@@ -200,13 +188,7 @@ class Parser():
 
             rows.insert(0, row)
 
-            return rows
-            # variable = Variable(idToken.value, ObjectType.Matrix)
-            # variable.addValue(row)
-            # for _row in rows:
-            #     variable.addValue(_row)
-
-            # return variable
+            return Matrix(rows)
         else:
             self.throwException()
     def OPERATION(self):
@@ -294,6 +276,14 @@ class Parser():
 # SEQUENCELIST -> SEQUENCE SEQUENCELIST | SEQUENCE '|' SEQUENCELIST | lambda
 
 # A = (4 + 3) * 8 / 3 + [1 2 3.];
-
 # E + A
-# 
+# A / B + A
+# A * B / B + A
+# (E) * B / B + A
+# (E + A) * B / B + A
+# (4 + 3) * B / B + A
+# (4 + 3) * 8 / 3 + A
+
+
+# Computation
+# Left Value, operation, right Value

@@ -1,28 +1,5 @@
-A = 4 + (3 * ((8 / (3) + ([1 2 3.]))));
+A = [1 2 3.
+     2 3 4.
+     5 6 7.];
+A = A * 10;
 
-c = 10+4;
-
-A =  10 * [1 2 3 4 5.
-      3 4 5 6  | 5.
-      4 6 7 7  | 6. ];
-
-Bob = [ 1 2 3 39.
-      3 4 5 6.
-      4 6 7 7. ];
-b = 10;
-A = 10;
-//This is a comment
-
-
-//Grammar
-// Emtrix -> Declaration DeclarationList Expression
-// Declaration -> id = VALUE ;
-// DeclarationList -> Declaration DeclarationList | lambda
-// Expression -> FUNC openParen ID closeParen ;
-// FUNC -> det
-// VALUE -> openBracket ROW ROWLIST closeBracket | SEQUENCE OPERATION
-// ROW -> SEQUENCE SEQUENCELIST .
-// ROWLIST -> ROW ROWLIST | lambda
-// OPERATION -> * SEQUENCE | - SEQUENCE | + SEQUENCE | / SEQUENCE | lambda 
-// SEQUENCE -> id | num
-// SEQUENCELIST -> SEQUENCE SEQUENCELIST | SEQUENCE '|' SEQUENCELIST | lambda
