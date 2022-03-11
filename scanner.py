@@ -3,11 +3,11 @@ from tokens import Token
 import re 
 
 class Scanner:
-    def __init__(self, input):
+    def __init__(self, input, line = 1):
         self.curr = None
         self.input = input
         self.tokens = []
-        self.line = 1
+        self.line = line
     
     def scanNext(self):
         while (self.scan(TokenType.WHITESPACE) or self.scan(TokenType.NEWLINE)):

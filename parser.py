@@ -135,7 +135,7 @@ class Parser():
             vals = []
             for x in params:
                 x = re.search(TokenType.PARAM.value, x).group()
-                s = Scanner(x)
+                s = Scanner(x, _str.line)
                 s.scanAll()
 
                 p = Parser(s.tokens, self.emtrix)
