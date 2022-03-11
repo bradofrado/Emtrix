@@ -1,5 +1,5 @@
 from tokens import TokenType, Token
-from emtrix import Computation, Matrix, ObjectType, OperatorType, Value, Number, Variable, Emtrix
+from emtrix import Computation, Function, Matrix, ObjectType, OperatorType, Print, Value, Number, Variable, Emtrix
 
 class Parser():
     def __init__(self, tokens):
@@ -63,7 +63,7 @@ class Parser():
         #can loop through these, until it hits something not in this list
         #this is essentially anything that can be in a computation (including matrix tokens)
         toCheck = [TokenType.ID, TokenType.NUM, TokenType.STAR, TokenType.DIVIDE, TokenType.PLUS, TokenType.MINUS, TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET, TokenType.PERIOD, TokenType.PIPE, TokenType.OPEN_PAREN, TokenType.CLOSE_PAREN]
-        while index < len(tokens) - 1 and self.switch(toCheck, tokens[index].token):
+        while index < len(tokens) - 1 and (self.switch(toCheck, tokens[index].token) or self.isFunc(tokens[index].token)):
             # Keep track of how many levels of parenthesis we are in
             if tokens[index].token == TokenType.OPEN_PAREN:
                 parenDepth = parenDepth + 1
@@ -77,12 +77,16 @@ class Parser():
 
         return hitIndex
 
+    def isFunc(self, token):
+        funcs = [TokenType.DET]
+        return self.switch(funcs, token)
+
     #Grammars
     def Emtrix(self):
         if self.curr.token == TokenType.ID:
             self.Declaration()
             self.DeclarationList()
-            self.ExpressionList()
+            self.PrintList()
             self.match(TokenType.EOF)
         else:
             self.throwException()
@@ -104,24 +108,31 @@ class Parser():
             #lambda
             pass
         return None
-    def Expression(self):
-        if (self.curr.token == TokenType.DET):
+    def Expression(self, tokens) -> Value:
+        if (tokens[0].token == TokenType.DET):
             self.FUNC()
             self.match(TokenType.OPEN_PAREN)
-            self.SEQUENCE()
+            val = self.COMPUTATION(tokens[2:])
             self.match(TokenType.CLOSE_PAREN)
-            self.match(TokenType.SEMICOLON)
+            
+            return Function(val, OperatorType.Det)
         else:
             self.throwException()
         return None
-    def ExpressionList(self):
-        if (self.curr.token == TokenType.DET):
-            self.Expression()
+    def PrintList(self):
+        if (self.curr.token == TokenType.ARROW):
+            self.Print()
             self.DeclarationList()
-            self.ExpressionList()
+            self.PrintList()
         else:
             #lambda
             pass
+    def Print(self):
+        if self.curr.token == TokenType.ARROW:
+            self.match(TokenType.ARROW)
+            val = self.COMPUTATION(self.tokens)
+
+            self.emtrix.addPrint(Print(val))
     def FUNC(self):
         if (self.curr.token == TokenType.DET):
             self.match(TokenType.DET)
@@ -176,6 +187,8 @@ class Parser():
             self.match(TokenType.CLOSE_PAREN)
 
             return value
+        elif self.isFunc(tokens[0].token):
+            return self.Expression(tokens)
         else:
             self.throwException()
         pass
@@ -258,18 +271,19 @@ class Parser():
             return []
         return None
 #Grammar
-# Emtrix -> Declaration DeclarationList ExpressionList
+# Emtrix -> Declaration DeclarationList PrintList
 # Declaration -> id = COMPUTATION ;
 # DeclarationList -> Declaration DeclarationList | lambda
-# ExpressionList -> Expression DeclarationList ExpressionList  | lambda
-# Expression -> FUNC openParen ID closeParen ;
+# PrintList -> COMPUTATION DeclarationList PrintList  | lambda
+# Print -> > COMPUTATION
+# Expression -> FUNC openParen COMPUTATION closeParen;
 # FUNC -> det
 # ROW -> SEQUENCE SEQUENCELIST .
 # ROWLIST -> ROW ROWLIST | lambda
 # COMPUTATION -> E
 # E -> E - A | E + A | A
 # A -> A * B | A / B | B
-# B -> SEQUENCE | MATRIX | (E)
+# B -> SEQUENCE | MATRIX | (E) | EXPRESSION
 # OPERATION -> * SEQUENCE | - SEQUENCE | + SEQUENCE | / SEQUENCE | lambda 
 # SEQUENCE -> id | num
 # MATRIX -> openBracket ROW ROWLIST closeBracket

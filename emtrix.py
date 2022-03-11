@@ -10,12 +10,14 @@ class OperatorType(Enum):
     Minus = 1
     Multiply = 2
     Divide = 3
+    Det = 4
 
 operations = {
     OperatorType.Plus: lambda x,y: x.getValue() + y.getValue(),
     OperatorType.Minus: lambda x,y: x.getValue() - y.getValue(),
     OperatorType.Multiply: lambda x,y: x.getValue() * y.getValue(),
     OperatorType.Divide: lambda x,y: x.getValue() / y.getValue(),
+    OperatorType.Det: lambda x: x.getValue()
 }
 
 class Value():
@@ -42,6 +44,15 @@ class Matrix(Value):
         self.value = rows
     def getValue(self):
         return 0
+
+class Function(Value):
+    def __init__(self, value : Value, type : OperatorType):
+        super().__init__()
+        self.value = value
+        self.type = type
+    def getValue(self):
+        return operations[self.type](self.value)
+
 class Computation(Value):
     def __init__(self, leftValue : Value, rightValue : Value, operator : OperatorType):
         self.leftValue = leftValue
@@ -62,10 +73,17 @@ class Variable(Value):
     def __str__(self) -> str:
         return self.name + " = " + super().__str__()
 
+class Print():
+    def __init__(self, value : Value):
+        self.value = value
+    def print(self):
+        print(str(self.value.getValue()))
+
 
 class Emtrix():
     def __init__(self):
         self.variables = []
+        self.prints = []
         pass
     def __str__(self) -> str:
         _str = ''
@@ -75,6 +93,14 @@ class Emtrix():
             if (i < len(self.variables) -1):
                 _str += '\n'
         return _str
+    def addPrint(self, _print):
+        self.prints.append(_print)
+
+    def printAll(self):
+        for x in self.prints:
+            x.print()
+    def printVariables(self):
+        print(self.__str__())
     def addVariable(self, value):
         var = self.__find__(value.name)
 

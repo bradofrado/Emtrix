@@ -20,6 +20,7 @@ class TokenType(Enum):
     MINUS = '^-'
     PLUS = '^\+'
     DIVIDE = '^\/(?!\/\*)(?!\/)'
+    ARROW = '^\>'
 
     #Misc
     COMMENT = '(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)'
