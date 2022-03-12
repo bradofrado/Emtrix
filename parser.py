@@ -83,7 +83,7 @@ class Parser():
         return hitIndex
 
     def isFunc(self, token):
-        funcs = [TokenType.DET]
+        funcs = [TokenType.DET, TokenType.EIG]
         return self.switch(funcs, token)
 
     #Grammars
@@ -110,13 +110,22 @@ class Parser():
             pass
         return None
     def Expression(self, tokens) -> Value:
-        if (tokens[0].token == TokenType.DET):
+        if (self.isFunc(tokens[0].token)):
             self.FUNC()
             self.match(TokenType.OPEN_PAREN)
             val = self.COMPUTATION(tokens[2:])
             self.match(TokenType.CLOSE_PAREN)
+
+            operator = None
+            if tokens[0].token == TokenType.EIG:
+                operator = OperatorType.Eig
+            elif tokens[0].token == TokenType.DET:
+                operator = OperatorType.Det
+
+            if operator == None:
+                raise Exception("Something went wrong")
             
-            return Function(val, OperatorType.Det)
+            return Function(val, operator)
         else:
             self.throwException()
         return None
@@ -144,8 +153,8 @@ class Parser():
                 
             self.emtrix.addPrint(Print(_str.value, vals))
     def FUNC(self):
-        if (self.curr.token == TokenType.DET):
-            self.match(TokenType.DET)
+        if self.isFunc(self.curr.token):
+            self.match(self.curr.token)
         else:
             self.throwException()
         return None
@@ -238,8 +247,9 @@ class Parser():
             self.match(TokenType.PERIOD)
 
             vals.insert(0, val)
+            _vals = [x.getValue() for x in vals]
 
-            return vals
+            return _vals
         else:
             self.throwException()
         return None
@@ -259,7 +269,7 @@ class Parser():
         if self.curr.token == TokenType.ID:
             idToken = self.match(TokenType.ID, True)
 
-            return self.emtrix.getVariable(idToken.value)
+            return self.emtrix.getVariable(idToken.value).value
         elif self.curr.token == TokenType.NUM:
             numToken = self.match(TokenType.NUM)
 

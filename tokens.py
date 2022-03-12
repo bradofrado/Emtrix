@@ -2,10 +2,11 @@ from enum import Enum
 class TokenType(Enum):
     #Keywords
     DET = '^det(?!\w)'
+    EIG = '^eig(?!\w)'
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'
-    NUM = '^[0-9]+'
+    NUM = '^-?[0-9]+'
 
     #Symbols
     EQUALS = '^='
@@ -26,7 +27,7 @@ class TokenType(Enum):
     COMMENT = '^\/\/.*'
     #STRINGBEGIN = '^\>[^{\n]*'
     #STRINGEND = '^}[^\n{]*'
-    STRING = '^\>.*?(?=\/\/|\n)'
+    STRING = '^\>.*?(?=\/\/|\n|$)'
     PARAMALL = '{[^{}]*}'
     PARAM = '[^{}]+'
     WHITESPACE = '^ +'

@@ -1,8 +1,8 @@
 from enum import Enum
 import re
+import numpy as np
 
 from tokens import TokenType
-#import numpy as np
 
 class ObjectType(Enum):
     Matrix = 0
@@ -14,13 +14,15 @@ class OperatorType(Enum):
     Multiply = 2
     Divide = 3
     Det = 4
+    Eig = 5
 
 operations = {
-    OperatorType.Plus: lambda x,y: x.getValue() + y.getValue(),
-    OperatorType.Minus: lambda x,y: x.getValue() - y.getValue(),
-    OperatorType.Multiply: lambda x,y: x.getValue() * y.getValue(),
-    OperatorType.Divide: lambda x,y: x.getValue() / y.getValue(),
-    OperatorType.Det: lambda x: x.getValue()
+    OperatorType.Plus: lambda x,y: x + y,
+    OperatorType.Minus: lambda x,y: x - y,
+    OperatorType.Multiply: lambda x,y: x * y,
+    OperatorType.Divide: lambda x,y: x / y,
+    OperatorType.Det: lambda x: x,
+    OperatorType.Eig: lambda x: x.eig()
 }
 
 class Value():
@@ -33,20 +35,50 @@ class Value():
         return self.__str__()
     def getValue(self):
         return self.value
-        pass
+    def __mul__(self, other):
+        if isinstance(other, Value):
+            return self.value * other.getValue()
+        return self.value * other
+    __rmul__ = __mul__
+    def __add__(self, other):
+        if isinstance(other, Value):
+            return self.value + other.getValue()
+        return self.value + other
+    __radd__ = __add__
+
+    def __sub__(self, other):
+        if isinstance(other, Value):
+            return self.value - other.getValue()
+        return self.value - other
 
 class Number(Value):
     def __init__(self, value):
         super().__init__()
-        self.value = value
+        self.value = int(value)
     def getValue(self):
-        return int(self.value)
+        return self.value
 class Matrix(Value):
     def __init__(self, rows):
         super().__init__()
-        self.value = rows
+        self.value = np.array(rows, dtype=int)
     def getValue(self):
-        return 0
+        return self.value
+    def __mul__ (self, other):
+        if isinstance(other, Matrix):
+            return np.matmul(self.value, other.getValue())
+        return super().__mul__(other)
+    def __add__(self, other):
+        if isinstance(other, Matrix):
+            return np.add(self.value, other.getValue())
+        return super().__add__(other)
+    __rmul__ = __mul__
+    def __sub__(self, other):
+        if isinstance(other, Matrix):
+            return np.subtract(self.value, other.getValue())
+        return super().__sub__(other)
+    __rsub__ = __sub__
+    def eig(self):
+        return np.linalg.eig(self.value)
 
 class Function(Value):
     def __init__(self, value : Value, type : OperatorType):
@@ -58,12 +90,13 @@ class Function(Value):
 
 class Computation(Value):
     def __init__(self, leftValue : Value, rightValue : Value, operator : OperatorType):
+        super().__init__()
         self.leftValue = leftValue
         self.rightValue = rightValue
         self.operator = operator
-        super().__init__()
     def getValue(self):
         return operations[self.operator](self.leftValue, self.rightValue)
+        
     
 class Variable(Value):
     def __init__(self, name, value):
@@ -75,6 +108,8 @@ class Variable(Value):
         return self.value.getValue()
     def __str__(self) -> str:
         return self.name + " = " + super().__str__()
+    def __mul__(self, other):
+        return 0
 
 class Print():
     def __init__(self, _str : str, vals):

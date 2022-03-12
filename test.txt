@@ -1,8 +1,22 @@
+prob1 = [1 5.
+        -4 10.];
+prob2 = [1 2.
+        3 4.];
+A = prob1*prob2;
+B = prob1-prob2;
+C = prob1+prob2;
 
->This should be 10: {4+9-3}, and this should be 25: {6*2+20-7}
+>2 matrices:
+>*: {A}
+>-: {B}
+>+: {C}
 
->When I multiply by something else
+A = 10*A;
+B = 10-B;
+C = 10+C;
 
->Here we go
-
->A = //{A}
+>
+>1 matrix:
+>*: {A}
+>-: {B}
+>+: {C}
