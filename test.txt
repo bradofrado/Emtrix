@@ -9,7 +9,7 @@ C = [1.
      2.];
 
 x = $(A*X = C);
-
+>random arithmetic: {10*3+2-(9+0.5)}
 >A = {A}
 >B = {B}
 >C = {C}
