@@ -12,7 +12,8 @@ def first_column_zeros(A):
     B[i] = B[i]-coeff*B[0]
   return B
 
-def row_echelon(C):
+def row_echelon(A):
+    C = np.copy(A)
     for i in range(len(C) - 1):
         C[i:,i:] = first_column_zeros(C[i:,i:])
     return C

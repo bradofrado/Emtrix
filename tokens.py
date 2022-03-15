@@ -4,8 +4,9 @@ class TokenType(Enum):
     DET = '^det(?!\w)'
     EIG = '^eig(?!\w)'
     INV = '^inv(?!\w)'
-    X = '^X'
+    X = '^X(?!\w)'
     ROW = '^row(?!\w)'
+    T = '^T(?!\w)'
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'
