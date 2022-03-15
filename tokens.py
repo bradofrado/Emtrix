@@ -4,6 +4,7 @@ class TokenType(Enum):
     DET = '^det(?!\w)'
     EIG = '^eig(?!\w)'
     INV = '^inv(?!\w)'
+    X = '^X'
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'
@@ -23,6 +24,7 @@ class TokenType(Enum):
     PLUS = '^\+'
     DIVIDE = '^\/(?!\/\*)(?!\/)'
     CARET = '^\^'
+    DOLLAR = '^\$'
 
     #Misc
     #COMMENT = '(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)'

@@ -10,6 +10,12 @@ class Parser():
         self.tokens = tokens
         self.curr = tokens[0]
         self.errorToken = None
+
+        self.funcs = []
+        for x in OperatorType:
+            for y in TokenType:
+                if (x.name == y.name):
+                    self.funcs.append(y)
  
         if emtrix == None:
             self.emtrix = Emtrix()
@@ -28,8 +34,11 @@ class Parser():
             return False
 
     def getOperator(self, token):
+        others = {
+            TokenType.DOLLAR: OperatorType.SOLVE
+        }
         for op in OperatorType:
-            if op.name == token.name:
+            if op.name == token.name or (token in others and others[token] == op):
                 return op
         return None
 
@@ -83,6 +92,10 @@ class Parser():
 
             # If we are one of the given token type and not in parens, save that index
             if self.switch(tokenTypes, tokens[index].token) and parenDepth == 0:
+                #The solve syntax, $(A*X = B) has a multiply then an X which should not be considered here
+                if tokens[index].token == TokenType.STAR and tokens[index+1].token == TokenType.X:
+                    index = index + 1
+                    continue
                 hitIndex = index
                 if leftAssociative == False:
                     break
@@ -91,12 +104,8 @@ class Parser():
         return hitIndex
 
     def isFunc(self, token):
-        funcs = []
-        for x in OperatorType:
-            for y in TokenType:
-                if (x.name == y.name):
-                    funcs.append(y)
-        return self.switch(funcs, token)
+        others = [TokenType.DOLLAR]        
+        return self.switch(self.funcs, token) or self.switch(others, token)
 
     #Grammars
     def Emtrix(self):
@@ -123,9 +132,18 @@ class Parser():
         return None
     def Expression(self, tokens) -> Value:
         if (self.isFunc(tokens[0].token)):
+            type = tokens[0].token
+            val2 = None
+
             self.FUNC()
             self.match(TokenType.OPEN_PAREN)
             val = self.COMPUTATION(tokens[2:])
+            #if this is a solve function, we have some extra grammar ie $(AX = B)
+            if type == TokenType.DOLLAR:
+                self.match(TokenType.STAR)
+                self.match(TokenType.X)
+                self.match(TokenType.EQUALS)
+                val2 = self.COMPUTATION(tokens[6:])
             self.match(TokenType.CLOSE_PAREN)
 
             operator = self.getOperator(tokens[0].token)
@@ -133,7 +151,7 @@ class Parser():
             if operator == None:
                 raise Exception("Something went wrong")
             
-            return Function(val, operator)
+            return Function(val, val2, operator)
         else:
             self.throwException()
         return None
@@ -241,24 +259,7 @@ class Parser():
 
             return Matrix(rows)
         else:
-            self.throwException()
-    def OPERATION(self):
-        if self.curr.token == TokenType.STAR:
-            self.match(TokenType.STAR)
-            self.SEQUENCE()
-        elif self.curr.token == TokenType.PLUS:
-            self.match(TokenType.PLUS)
-            self.SEQUENCE()
-        elif self.curr.token == TokenType.MINUS:
-            self.match(TokenType.MINUS)
-            self.SEQUENCE()
-        elif self.curr.token == TokenType.DIVIDE:
-            self.match(TokenType.DIVIDE)
-            self.SEQUENCE()
-        else:
-            #lambda
-            pass
-        return None
+            self.throwException()    
     def ROW(self):
         if self.curr.token == TokenType.ID or self.curr.token == TokenType.NUM:
             val = self.SEQUENCE()
@@ -323,7 +324,6 @@ class Parser():
 # E -> E - A | E + A | A
 # A -> A * B | A / B | B
 # B -> SEQUENCE | MATRIX | (E) | EXPRESSION
-# OPERATION -> * SEQUENCE | - SEQUENCE | + SEQUENCE | / SEQUENCE | lambda 
 # SEQUENCE -> id | num
 # MATRIX -> openBracket ROW ROWLIST closeBracket
 # SEQUENCELIST -> SEQUENCE SEQUENCELIST | SEQUENCE '|' SEQUENCELIST | lambda

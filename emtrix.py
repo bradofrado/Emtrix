@@ -1,8 +1,12 @@
 from enum import Enum
 import re
 import numpy as np
+from LUsolver import LU_solver, row_echelon
 
 from tokens import TokenType
+
+def isNumPyArray(value):
+    return type(value).__module__ == np.__name__ 
 
 class ObjectType(Enum):
     Matrix = 0
@@ -17,6 +21,7 @@ class OperatorType(Enum):
     EIG = lambda x: x.eig(),
     INV = lambda x: x.inv(),
     POWER = lambda x,y: x**y,
+    SOLVE = lambda x,y: x.solve(y),
 
 class Value():
     def __init__(self):
@@ -64,6 +69,8 @@ class Value():
         raise Exception("Cannot perform the operation det on this data type")
     def inv(self):
         raise Exception("Cannot perform the operation inv on this data type")
+    def solve(self):
+        raise Exception("Cannot perform the operation solve on this data type")
 
 class Number(Value):
     def __init__(self, value):
@@ -78,7 +85,7 @@ class Matrix(Value):
     def getValue(self):
         return self.value
     def __mul__ (self, other):
-        if isinstance(other, Matrix):
+        if isinstance(other, Value) and isNumPyArray(other.getValue()):
             return np.matmul(self.value, other.getValue())
         return super().__mul__(other)
     __rmul__ = __mul__
@@ -120,13 +127,20 @@ class Matrix(Value):
         return np.linalg.det(self.value)
     def inv(self):
         return np.linalg.inv(self.value)
+    def solve(self, other):
+        if isinstance(other, Matrix) == False:
+            raise Exception("Can only solve a matrix with a vector")
+        return LU_solver(self.value, other.getValue())
 
 class Function(Value):
-    def __init__(self, value : Value, type : OperatorType):
+    def __init__(self, value : Value, value2 : Value, type : OperatorType):
         super().__init__()
         self.value = value
+        self.value2 = value2
         self.type = type
     def getValue(self):
+        if self.value2:
+            return self.type.value[0](self.value, self.value2)
         return self.type.value[0](self.value)
 
 class Computation(Value):
