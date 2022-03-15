@@ -21,7 +21,7 @@ operations = {
     OperatorType.Minus: lambda x,y: x - y,
     OperatorType.Multiply: lambda x,y: x * y,
     OperatorType.Divide: lambda x,y: x / y,
-    OperatorType.Det: lambda x: x,
+    OperatorType.Det: lambda x: x.det(),
     OperatorType.Eig: lambda x: x.eig()
 }
 
@@ -54,6 +54,11 @@ class Value():
         if isinstance(other, Value):
             return self.value - other.getValue()
         return self.value - other
+
+    def eig(self):
+        raise Exception("Cannot perform the operation eig on this data type")
+    def det(self):
+        raise Exception("Cannot perform the operation eig on this data type")
 
 class Number(Value):
     def __init__(self, value):
@@ -93,6 +98,8 @@ class Matrix(Value):
         return super().__truediv__(other)
     def eig(self):
         return np.linalg.eig(self.value)
+    def det(self):
+        return np.linalg.det(self.value)
 
 class Function(Value):
     def __init__(self, value : Value, type : OperatorType):
