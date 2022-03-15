@@ -5,6 +5,7 @@ class TokenType(Enum):
     EIG = '^eig(?!\w)'
     INV = '^inv(?!\w)'
     X = '^X'
+    ROW = '^row(?!\w)'
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'

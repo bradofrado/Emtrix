@@ -17,3 +17,5 @@ x = $(A*X = C);
 >inv(A) = {inv(A)}
 >$(AX = C) = {x}
 >check-- {A*x}
+>row(A) = {row(A)}
+>row(B) = {row(B)}
