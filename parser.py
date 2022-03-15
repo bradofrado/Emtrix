@@ -67,13 +67,13 @@ class Parser():
         except:
             return False
 
-    def parseOperations(self, tokens, tokenTypes):
+    def parseOperations(self, tokens, tokenTypes, leftAssociative = True):
         index = 0
         hitIndex = -1
         parenDepth = 0
         #can loop through these, until it hits something not in this list
         #this is essentially anything that can be in a computation (including matrix tokens)
-        toCheck = [TokenType.ID, TokenType.NUM, TokenType.STAR, TokenType.DIVIDE, TokenType.PLUS, TokenType.MINUS, TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET, TokenType.PERIOD, TokenType.PIPE, TokenType.OPEN_PAREN, TokenType.CLOSE_PAREN]
+        toCheck = [TokenType.ID, TokenType.NUM, TokenType.STAR, TokenType.DIVIDE, TokenType.PLUS, TokenType.MINUS, TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET, TokenType.PERIOD, TokenType.PIPE, TokenType.OPEN_PAREN, TokenType.CLOSE_PAREN, TokenType.CARET]
         while index < len(tokens) - 1 and (self.switch(toCheck, tokens[index].token) or self.isFunc(tokens[index].token)):
             # Keep track of how many levels of parenthesis we are in
             if tokens[index].token == TokenType.OPEN_PAREN:
@@ -84,6 +84,8 @@ class Parser():
             # If we are one of the given token type and not in parens, save that index
             if self.switch(tokenTypes, tokens[index].token) and parenDepth == 0:
                 hitIndex = index
+                if leftAssociative == False:
+                    break
             index = index + 1
 
         return hitIndex
@@ -202,6 +204,18 @@ class Parser():
             self.throwException()
         pass
     def B(self, tokens) -> Value:
+        index = self.parseOperations(tokens, [TokenType.CARET], False)
+        if index == -1:
+            return self.C(tokens)
+        elif tokens[index].token == TokenType.CARET:
+            leftValue = self.C(tokens[0:index])
+            self.match(TokenType.CARET)
+            rightValue = self.B(tokens[index+1:])
+
+            return Computation(leftValue, rightValue, OperatorType.POWER)
+        else:
+            self.throwException()
+    def C(self, tokens) -> Value:
         if tokens[0].token == TokenType.ID or tokens[0].token == TokenType.NUM:
             return self.SEQUENCE()
         elif tokens[0].token == TokenType.OPEN_BRACKET:
@@ -216,7 +230,6 @@ class Parser():
             return self.Expression(tokens)
         else:
             self.throwException()
-        pass
     def MATRIX(self) -> Value:
         if self.curr.token == TokenType.OPEN_BRACKET:
             self.match(TokenType.OPEN_BRACKET)

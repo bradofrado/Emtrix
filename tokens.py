@@ -7,7 +7,7 @@ class TokenType(Enum):
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'
-    NUM = '^-?[0-9]+'
+    NUM = '^-?[0-9]+(\.[0-9]+)?'
 
     #Symbols
     EQUALS = '^='
@@ -22,6 +22,7 @@ class TokenType(Enum):
     MINUS = '^-'
     PLUS = '^\+'
     DIVIDE = '^\/(?!\/\*)(?!\/)'
+    CARET = '^\^'
 
     #Misc
     #COMMENT = '(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*)'

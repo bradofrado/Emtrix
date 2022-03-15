@@ -16,6 +16,7 @@ class OperatorType(Enum):
     DET = lambda x: x.det(),
     EIG = lambda x: x.eig(),
     INV = lambda x: x.inv(),
+    POWER = lambda x,y: x**y,
 
 class Value():
     def __init__(self):
@@ -27,26 +28,36 @@ class Value():
         return self.__str__()
     def getValue(self):
         return self.value
+    # def _getValue(self):
+    #     if type(self._value).__module__ != np.__name__ and self._value == None:
+    #         return self.getValue()
+    #     return self._value
+    # def setValue(self, value):
+    #     self._value = value
+    # value = property(_getValue, setValue)
     def __mul__(self, other):
         if isinstance(other, Value):
-            return self.value * other.getValue()
-        return self.value * other
+            return self.getValue() * other.getValue()
+        return self.getValue() * other
     __rmul__ = __mul__
     def __truediv__(self, other):
         if isinstance(other, Value):
-            return self.value / other.getValue()
-        return self.value / other
+            return self.getValue() / other.getValue()
+        return self.getValue() / other
     def __add__(self, other):
         if isinstance(other, Value):
-            return self.value + other.getValue()
-        return self.value + other
+            return self.getValue() + other.getValue()
+        return self.getValue() + other
     __radd__ = __add__
 
     def __sub__(self, other):
         if isinstance(other, Value):
-            return self.value - other.getValue()
-        return self.value - other
-
+            return self.getValue() - other.getValue()
+        return self.getValue() - other
+    def __pow__(self, other):
+        if isinstance(other, Value):
+            return self.getValue()**other.getValue()
+        return self.getValue()**other
     def eig(self):
         raise Exception("Cannot perform the operation eig on this data type")
     def det(self):
@@ -57,13 +68,13 @@ class Value():
 class Number(Value):
     def __init__(self, value):
         super().__init__()
-        self.value = int(value)
+        self.value = float(value)
     def getValue(self):
         return self.value
 class Matrix(Value):
     def __init__(self, rows):
         super().__init__()
-        self.value = np.array(rows, dtype=int)
+        self.value = np.array(rows, dtype=float)
     def getValue(self):
         return self.value
     def __mul__ (self, other):
@@ -90,6 +101,19 @@ class Matrix(Value):
         if isinstance(other, Matrix):
             return np.matmul(self.value, np.linalg.inv(other.getValue()))
         return super().__truediv__(other)
+    def __pow__(self,other):
+        #We can't do matrix to another power
+        if isinstance(other, Matrix):
+            raise Exception("Cannot raise a matrix to the power of another matrix... yet.")  
+        #If they are raising a matrix to -1 (or a multiple), then take the inverse          
+        value = other
+        if isinstance(other, Value):
+            value = other.getValue()
+        if value < 0:
+            value = np.abs(value)
+            return np.linalg.inv(self**value)
+
+        return super().__pow__(other)
     def eig(self):
         return np.linalg.eig(self.value)
     def det(self):
@@ -106,11 +130,11 @@ class Function(Value):
         return self.type.value[0](self.value)
 
 class Computation(Value):
-    def __init__(self, leftValue : Value, rightValue : Value, operator : OperatorType):
+    def __init__(self, leftValue : Value, rightValue : Value, type : OperatorType):
         super().__init__()
         self.leftValue = leftValue
         self.rightValue = rightValue
-        self.operator = operator
+        self.type = type
     def getValue(self):
         return self.type.value[0](self.leftValue, self.rightValue)
         
