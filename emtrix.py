@@ -40,6 +40,10 @@ class Value():
             return self.value * other.getValue()
         return self.value * other
     __rmul__ = __mul__
+    def __truediv__(self, other):
+        if isinstance(other, Value):
+            return self.value / other.getValue()
+        return self.value / other
     def __add__(self, other):
         if isinstance(other, Value):
             return self.value + other.getValue()
@@ -67,16 +71,26 @@ class Matrix(Value):
         if isinstance(other, Matrix):
             return np.matmul(self.value, other.getValue())
         return super().__mul__(other)
+    __rmul__ = __mul__
     def __add__(self, other):
         if isinstance(other, Matrix):
             return np.add(self.value, other.getValue())
         return super().__add__(other)
-    __rmul__ = __mul__
     def __sub__(self, other):
         if isinstance(other, Matrix):
             return np.subtract(self.value, other.getValue())
         return super().__sub__(other)
     __rsub__ = __sub__
+    def __truediv__(self, other):
+        #A/B can be seen as A*B^-1
+        if isinstance(other, Matrix):
+            return np.matmul(self.value, np.linalg.inv(other.getValue()))
+        return super().__truediv__(other)
+    def __rtruediv__(self, other):
+        #A/B can be seen as A*B^-1
+        if isinstance(other, Matrix):
+            return np.matmul(self.value, np.linalg.inv(other.getValue()))
+        return super().__truediv__(other)
     def eig(self):
         return np.linalg.eig(self.value)
 
