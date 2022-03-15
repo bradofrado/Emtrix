@@ -3,6 +3,7 @@ class TokenType(Enum):
     #Keywords
     DET = '^det(?!\w)'
     EIG = '^eig(?!\w)'
+    INV = '^inv(?!\w)'
 
     #Identifieers
     ID = '^[a-zA-Z][a-zA-Z0-9]*'

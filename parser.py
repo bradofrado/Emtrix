@@ -27,6 +27,12 @@ class Parser():
             self.errorToken = token
             return False
 
+    def getOperator(self, token):
+        for op in OperatorType:
+            if op.name == token.name:
+                return op
+        return None
+
     def moveNext(self):
         val = None
         if self.curr.token != TokenType.EOF:
@@ -83,7 +89,11 @@ class Parser():
         return hitIndex
 
     def isFunc(self, token):
-        funcs = [TokenType.DET, TokenType.EIG]
+        funcs = []
+        for x in OperatorType:
+            for y in TokenType:
+                if (x.name == y.name):
+                    funcs.append(y)
         return self.switch(funcs, token)
 
     #Grammars
@@ -116,12 +126,8 @@ class Parser():
             val = self.COMPUTATION(tokens[2:])
             self.match(TokenType.CLOSE_PAREN)
 
-            operator = None
-            if tokens[0].token == TokenType.EIG:
-                operator = OperatorType.Eig
-            elif tokens[0].token == TokenType.DET:
-                operator = OperatorType.Det
-
+            operator = self.getOperator(tokens[0].token)
+            
             if operator == None:
                 raise Exception("Something went wrong")
             
@@ -167,13 +173,13 @@ class Parser():
             self.match(TokenType.MINUS)
             rightValue = self.A(tokens[index+1:])
 
-            return Computation(leftValue, rightValue, OperatorType.Minus)
+            return Computation(leftValue, rightValue, OperatorType.MINUS)
         elif tokens[index].token == TokenType.PLUS:
             leftValue = self.COMPUTATION(tokens[0:index])
             self.match(TokenType.PLUS)
             rightValue = self.A(tokens[index+1:])
 
-            return Computation(leftValue, rightValue, OperatorType.Plus)
+            return Computation(leftValue, rightValue, OperatorType.PLUS)
         else:
             self.throwException()
     def A(self, tokens) -> Value:
@@ -185,13 +191,13 @@ class Parser():
             self.match(TokenType.STAR)
             rightValue = self.B(tokens[index+1:])
 
-            return Computation(leftValue, rightValue, OperatorType.Multiply)
+            return Computation(leftValue, rightValue, OperatorType.MULTIPLY)
         elif tokens[index].token == TokenType.DIVIDE:
             leftValue = self.A(tokens[0:index])
             self.match(TokenType.DIVIDE)
             rightValue = self.B(tokens[index+1:])
 
-            return Computation(leftValue, rightValue, OperatorType.Divide)
+            return Computation(leftValue, rightValue, OperatorType.DIVIDE)
         else:
             self.throwException()
         pass

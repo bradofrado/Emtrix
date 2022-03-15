@@ -9,21 +9,13 @@ class ObjectType(Enum):
     Int = 1
 
 class OperatorType(Enum):
-    Plus = 0
-    Minus = 1
-    Multiply = 2
-    Divide = 3
-    Det = 4
-    Eig = 5
-
-operations = {
-    OperatorType.Plus: lambda x,y: x + y,
-    OperatorType.Minus: lambda x,y: x - y,
-    OperatorType.Multiply: lambda x,y: x * y,
-    OperatorType.Divide: lambda x,y: x / y,
-    OperatorType.Det: lambda x: x.det(),
-    OperatorType.Eig: lambda x: x.eig()
-}
+    PLUS = lambda x, y: x + y,
+    MINUS = lambda x, y: x - y,
+    MULTIPLY = lambda x, y: x * y,
+    DIVIDE = lambda x, y: x / y,
+    DET = lambda x: x.det(),
+    EIG = lambda x: x.eig(),
+    INV = lambda x: x.inv(),
 
 class Value():
     def __init__(self):
@@ -58,7 +50,9 @@ class Value():
     def eig(self):
         raise Exception("Cannot perform the operation eig on this data type")
     def det(self):
-        raise Exception("Cannot perform the operation eig on this data type")
+        raise Exception("Cannot perform the operation det on this data type")
+    def inv(self):
+        raise Exception("Cannot perform the operation inv on this data type")
 
 class Number(Value):
     def __init__(self, value):
@@ -100,6 +94,8 @@ class Matrix(Value):
         return np.linalg.eig(self.value)
     def det(self):
         return np.linalg.det(self.value)
+    def inv(self):
+        return np.linalg.inv(self.value)
 
 class Function(Value):
     def __init__(self, value : Value, type : OperatorType):
@@ -107,7 +103,7 @@ class Function(Value):
         self.value = value
         self.type = type
     def getValue(self):
-        return operations[self.type](self.value)
+        return self.type.value[0](self.value)
 
 class Computation(Value):
     def __init__(self, leftValue : Value, rightValue : Value, operator : OperatorType):
@@ -116,7 +112,7 @@ class Computation(Value):
         self.rightValue = rightValue
         self.operator = operator
     def getValue(self):
-        return operations[self.operator](self.leftValue, self.rightValue)
+        return self.type.value[0](self.leftValue, self.rightValue)
         
     
 class Variable(Value):

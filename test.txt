@@ -8,4 +8,5 @@ C = A / B;
 >A = {A}
 >B = {B}
 >det(A) = {det(A)}
->det(B) = {det(B)}
+>eig(B) = {eig(B)}
+>inv(B) = {inv(B)}
