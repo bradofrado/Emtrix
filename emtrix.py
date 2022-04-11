@@ -38,6 +38,7 @@ class OperatorType(Enum):
     SOLVE = MatrixCallable(lambda x,y: LU_solver(x.getValue(), y.getValue()))
     ROW = MatrixCallable(lambda x: row_echelon(x.getValue()))
     T = MatrixCallable(lambda x: np.transpose(x.getValue()))
+    SVD = MatrixCallable(lambda x: np.linalg.svd(x.getValue()))
 
 class Value():
     def __init__(self):

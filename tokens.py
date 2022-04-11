@@ -4,6 +4,7 @@ class TokenType(Enum):
     DET = '^det(?!\w)'
     EIG = '^eig(?!\w)'
     INV = '^inv(?!\w)'
+    SVD = '^svd(?!\w)'
     X = '^X(?!\w)'
     ROW = '^row(?!\w)'
     T = '^T(?!\w)'

@@ -11,7 +11,7 @@ def readFromFile(fileName):
             input += line
     return input
 
-fileName = "test.txt"
+fileName = "homework.txt"
 if len(sys.argv) > 1:
     fileName = sys.argv[1]
 
