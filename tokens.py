@@ -37,7 +37,7 @@ class TokenType(Enum):
     STRING = '^\>.*?(?=\/\/|\n|$)'
     PARAMALL = '{[^{}]*}'
     PARAM = '[^{}]+'
-    WHITESPACE = '^ +'
+    WHITESPACE = '^( |\t)+'
     NEWLINE = '^\n'
     UNDEFINED = '^[^a-zA-Z0-9\s\[\]\.\(\)\|\=;\*]+'
     EOF = '^\Z'

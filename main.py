@@ -14,6 +14,8 @@ def readFromFile(fileName):
 fileName = "homework.txt"
 if len(sys.argv) > 1:
     fileName = sys.argv[1]
+else:
+    raise Exception("No input files")
 
 input = readFromFile(fileName)
 
