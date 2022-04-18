@@ -211,6 +211,7 @@ class Print():
         for i in range(len(params)):
             val = self.vals[i]
             self.string = self.string.replace(params[i], str(val.getValue()))
+        self.string = self.string.replace('>', '')
         print(self.string)
 
         #print(str(self.value.getValue()))
