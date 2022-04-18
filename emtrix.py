@@ -228,7 +228,10 @@ class Print():
         for i in range(len(params)):
             val = self.vals[i]
             offset = self.string.index(params[i])
-            val = val.getValue()
+            value = val.getValue()
+
+            if isinstance(value, Value):
+                val = value
 
             #For now only offset if one param
             if len(params) == 1:

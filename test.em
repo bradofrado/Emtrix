@@ -4,8 +4,6 @@ A = [1 2.
 I = [1 0.
      0 1.];
   
->A + 3 = {A + 2*2} more stuff {A}
->
->
->
->Hello there
+>A: {A}
+>T(A): {T(A)}
+>inv(A): {inv(A)}
