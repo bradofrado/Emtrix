@@ -55,7 +55,10 @@ class OperatorType(Enum):
 class Value():
     def __init__(self, value = None):
         self.value = value
+        self.offset = 0
         pass
+    def setOffset(self, offset):
+        self.offset = offset
     def __str__(self) -> str:
         return str(self.value)
     def __repr__(self) -> str:
@@ -116,6 +119,20 @@ class Matrix(Value):
     def __init__(self, rows):
         super().__init__()
         self.value = np.array(rows, dtype=float)
+    def __str__(self) -> str:
+        _str = '['
+        for i in range(len(self.value)):
+            for j in range(len(self.value[i])):
+                _str += str(self.value[i][j])
+                if j < len(self.value[i]) - 1:
+                    _str += ' '
+            if i < len(self.value) - 1:
+                _str += '.\n'
+                for k in range(self.offset + 1):
+                    _str += ' '
+        _str += ']'
+
+        return _str
     def getValue(self):
         return self.value
     def __mul__ (self, other):
@@ -203,15 +220,20 @@ class Variable(Value):
 
 class Print():
     def __init__(self, _str : str, vals):
-        self.string = _str
+        self.string = _str.replace('>', '')
         self.vals = vals
     def print(self):
         params = re.findall(TokenType.PARAMALL.value, self.string)
-
+        offset = 0
         for i in range(len(params)):
             val = self.vals[i]
-            self.string = self.string.replace(params[i], str(val.getValue()))
-        self.string = self.string.replace('>', '')
+            offset = self.string.index(params[i])
+            val = val.getValue()
+
+            #For now only offset if one param
+            if len(params) == 1:
+                val.setOffset(offset)
+            self.string = self.string.replace(params[i], str(val))
         print(self.string)
 
         #print(str(self.value.getValue()))
