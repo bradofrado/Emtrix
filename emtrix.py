@@ -95,23 +95,23 @@ class Number(Value):
     def __mul__(self, other):
         if isinstance(other, Matrix):
             return other * self
-        return super().__mul__(other)
+        return Number(super().__mul__(other).getValue())
     def __truediv__(self, other):
         if isinstance(other, Matrix):
             return other / self
-        return super().__truediv__(other)
+        return Number(super().__truediv__(other).getValue())
     def __add__(self, other):
         if isinstance(other, Matrix):
             return other + self
-        return super().__add__(other)
+        return Number(super().__add__(other).getValue())
     def __sub__(self, other):
         if isinstance(other, Matrix):
-            return other - self
-        return super().__sub__(other)
+            return (other * -1) + self
+        return Number(super().__sub__(other).getValue())
     def __pow__(self, other):
         if isinstance(other, Matrix):
             raise Exception("Cannot raise a number to a power")
-        return super().__pow__(other)
+        return Number(super().__pow__(other).getValue())
 class Matrix(Value):
     def __init__(self, rows):
         super().__init__()
@@ -128,6 +128,12 @@ class Matrix(Value):
         m = convertToMatrix(other)
         if m != None:
             return Matrix(np.add(self.value, m.getValue()))
+        
+        #if we are adding to a number, just add to the number times the identity matrix
+        if isinstance(other, Number):
+            return Matrix(np.add(self.value, np.identity(len(self.value))*other.getValue()))
+        if isinstance(other, Value) and isinstance(other.getValue(), Number):
+            return Matrix(np.add(self.value, np.identity(len(self.value))*other.getValue().getValue()))
         return Matrix(super().__add__(other).getValue())
     def __sub__(self, other):
         m = convertToMatrix(other)
