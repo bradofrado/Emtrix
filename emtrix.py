@@ -10,6 +10,18 @@ def isNumPyArray(value):
 def isMatrix(value):
         return isinstance(value, Value) and isNumPyArray(value.getValue())
 
+def convertToMatrix(value):
+    if isinstance(value, Value):
+        val = value.getValue()
+        if isNumPyArray(val):
+            return Matrix(val)
+        if isinstance(val, Matrix):
+            return val
+    if isNumPyArray(value):
+        return Matrix(value)
+
+    return None
+
 class ObjectType(Enum):
     Matrix = 0
     Int = 1
@@ -24,7 +36,7 @@ class MatrixCallable(Callable):
     def __call__(self, *args, **kwds):
         if isMatrix(args[0]) == False:
             raise Exception("Cannot perform the operation on this data type")
-        return super().__call__(*args, **kwds)
+        return Matrix(super().__call__(*args, **kwds))
 
 class OperatorType(Enum):
     PLUS = Callable(lambda x, y: x + y)
@@ -41,8 +53,8 @@ class OperatorType(Enum):
     SVD = MatrixCallable(lambda x: np.linalg.svd(x.getValue()))
 
 class Value():
-    def __init__(self):
-        self.value = None
+    def __init__(self, value = None):
+        self.value = value
         pass
     def __str__(self) -> str:
         return str(self.value)
@@ -52,27 +64,27 @@ class Value():
         return self.value   
     def __mul__(self, other):
         if isinstance(other, Value):
-            return self.getValue() * other.getValue()
-        return self.getValue() * other
+            return Value(self.getValue() * other.getValue())
+        return Value(self.getValue() * other)
     __rmul__ = __mul__
     def __truediv__(self, other):
         if isinstance(other, Value):
-            return self.getValue() / other.getValue()
-        return self.getValue() / other
+            return Value(self.getValue() / other.getValue())
+        return Value(self.getValue() / other)
     def __add__(self, other):
         if isinstance(other, Value):
-            return self.getValue() + other.getValue()
-        return self.getValue() + other
+            return Value(self.getValue() + other.getValue())
+        return Value(self.getValue() + other)
     __radd__ = __add__
 
     def __sub__(self, other):
         if isinstance(other, Value):
-            return self.getValue() - other.getValue()
-        return self.getValue() - other
+            return Value(self.getValue() - other.getValue())
+        return Value(self.getValue() - other)
     def __pow__(self, other):
         if isinstance(other, Value):
-            return self.getValue()**other.getValue()
-        return self.getValue()**other
+            return Value(self.getValue()**other.getValue())
+        return Value(self.getValue()**other)
 
 class Number(Value):
     def __init__(self, value):
@@ -80,6 +92,26 @@ class Number(Value):
         self.value = float(value)
     def getValue(self):
         return self.value
+    def __mul__(self, other):
+        if isinstance(other, Matrix):
+            return other * self
+        return super().__mul__(other)
+    def __truediv__(self, other):
+        if isinstance(other, Matrix):
+            return other / self
+        return super().__truediv__(other)
+    def __add__(self, other):
+        if isinstance(other, Matrix):
+            return other + self
+        return super().__add__(other)
+    def __sub__(self, other):
+        if isinstance(other, Matrix):
+            return other - self
+        return super().__sub__(other)
+    def __pow__(self, other):
+        if isinstance(other, Matrix):
+            raise Exception("Cannot raise a number to a power")
+        return super().__pow__(other)
 class Matrix(Value):
     def __init__(self, rows):
         super().__init__()
@@ -87,29 +119,34 @@ class Matrix(Value):
     def getValue(self):
         return self.value
     def __mul__ (self, other):
-        if isMatrix(other):
-            return np.matmul(self.value, other.getValue())
-        return super().__mul__(other)
+        m = convertToMatrix(other)
+        if m != None:
+            return Matrix(np.matmul(self.value, m.getValue()))
+        return Matrix(super().__mul__(other).getValue())
     __rmul__ = __mul__
     def __add__(self, other):
-        if isMatrix(other):
-            return np.add(self.value, other.getValue())
-        return super().__add__(other)
+        m = convertToMatrix(other)
+        if m != None:
+            return Matrix(np.add(self.value, m.getValue()))
+        return Matrix(super().__add__(other).getValue())
     def __sub__(self, other):
-        if isMatrix(other):
-            return np.subtract(self.value, other.getValue())
-        return super().__sub__(other)
+        m = convertToMatrix(other)
+        if m != None:
+            return Matrix(np.subtract(self.value, m.getValue()))
+        return Matrix(super().__sub__(other).getValue())
     __rsub__ = __sub__
     def __truediv__(self, other):
         #A/B can be seen as A*B^-1
-        if isMatrix(other):
-            return np.matmul(self.value, np.linalg.inv(other.getValue()))
-        return super().__truediv__(other)
+        m = convertToMatrix(other)
+        if m != None:
+            return Matrix(np.matmul(self.value, np.linalg.inv(m.getValue())))
+        return Matrix(super().__truediv__(other).getValue())
     def __rtruediv__(self, other):
         #A/B can be seen as A*B^-1
-        if isMatrix(other):
-            return np.matmul(self.value, np.linalg.inv(other.getValue()))
-        return super().__truediv__(other)
+        m = convertToMatrix(other)
+        if m != None:
+            return Matrix(np.matmul(self.value, np.linalg.inv(m.getValue())))
+        return Matrix(super().__truediv__(other).getValue())
     def __pow__(self,other):
         #We can't do matrix to another power
         if isMatrix(other):
@@ -120,9 +157,9 @@ class Matrix(Value):
             value = other.getValue()
         if value < 0:
             value = np.abs(value)
-            return np.linalg.inv(self**value)
+            return Matrix(np.linalg.inv(self**value))
 
-        return super().__pow__(other)
+        return Matrix(super().__pow__(other).getValue())
 
 class Function(Value):
     def __init__(self, value : Value, value2 : Value, type : OperatorType):

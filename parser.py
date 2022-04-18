@@ -316,14 +316,15 @@ class Parser():
 # DeclarationList -> Declaration DeclarationList | lambda
 # PrintList -> Print DeclarationList PrintList  | lambda
 # Print -> string
-# Expression -> FUNC openParen COMPUTATION closeParen;
-# FUNC -> det
+# Expression -> FUNC openParen COMPUTATION closeParen | SOLVE 
+# Solve -> $ openParen COMPUTATION * x = COMPUTATION close Paren
+# FUNC -> det | eig | ...
 # ROW -> SEQUENCE SEQUENCELIST .
 # ROWLIST -> ROW ROWLIST | lambda
-# COMPUTATION -> E
-# E -> E - A | E + A | A
+# COMPUTATION -> COMPUTATION - A | COMPUTATION + A | A
 # A -> A * B | A / B | B
-# B -> SEQUENCE | MATRIX | (E) | EXPRESSION
+# B -> C ^ B | C
+# C -> SEQUENCE | MATRIX | (COMPUTATION) | EXPRESSION
 # SEQUENCE -> id | num
 # MATRIX -> openBracket ROW ROWLIST closeBracket
 # SEQUENCELIST -> SEQUENCE SEQUENCELIST | SEQUENCE '|' SEQUENCELIST | lambda
