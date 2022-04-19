@@ -36,21 +36,21 @@ class MatrixCallable(Callable):
     def __call__(self, *args, **kwds):
         if isMatrix(args[0]) == False:
             raise Exception("Cannot perform the operation on this data type")
-        return Matrix(super().__call__(*args, **kwds))
+        return super().__call__(*args, **kwds)
 
 class OperatorType(Enum):
     PLUS = Callable(lambda x, y: x + y)
     MINUS = Callable(lambda x, y: x - y)
     MULTIPLY = Callable(lambda x, y: x * y)
     DIVIDE = Callable(lambda x, y: x / y)
-    DET = MatrixCallable(lambda x: np.linalg.det(x.getValue()))
-    EIG = MatrixCallable(lambda x: np.linalg.eig(x.getValue()))
-    INV = MatrixCallable(lambda x: np.linalg.inv(x.getValue()))
-    POWER = MatrixCallable(lambda x,y: x**y)
-    SOLVE = MatrixCallable(lambda x,y: LU_solver(x.getValue(), y.getValue()))
-    ROW = MatrixCallable(lambda x: row_echelon(x.getValue()))
-    T = MatrixCallable(lambda x: np.transpose(x.getValue()))
-    SVD = MatrixCallable(lambda x: np.linalg.svd(x.getValue()))
+    DET = MatrixCallable(lambda x: Number(np.linalg.det(x.getValue())))
+    EIG = MatrixCallable(lambda x: Matrix(np.linalg.eig(x.getValue())))
+    INV = MatrixCallable(lambda x: Matrix(np.linalg.inv(x.getValue())))
+    POWER = MatrixCallable(lambda x,y: Matrix(x**y))
+    SOLVE = MatrixCallable(lambda x,y: Matrix(LU_solver(x.getValue(), y.getValue())))
+    ROW = MatrixCallable(lambda x: Matrix(row_echelon(x.getValue())))
+    T = MatrixCallable(lambda x: Matrix(np.transpose(x.getValue())))
+    SVD = MatrixCallable(lambda x: Matrix(np.linalg.svd(x.getValue())))
 
 class Value():
     def __init__(self, value = None):
